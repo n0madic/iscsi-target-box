@@ -1,4 +1,4 @@
-#summary One-sentence summary of this page.
+#summary Installation script for generate initramfs
 
 = Introduction =
 
@@ -9,5 +9,5 @@ Manual for [http://wiki.archlinux.org/index.php/Mkinitcpio mkinitcpio] on ArchWi
 
 Installing for dependencies:
   * pacman -S mkinitcpio-nfs-utils
-  * install iscsitarget-kernel and iscsitarget-usr from AUR or compile by yourself fresh [http://iscsitarget.sourceforge.net/ version]
+  * install [http://aur.archlinux.org/packages.php?ID=24067 iscsitarget-kernel] and [http://aur.archlinux.org/packages.php?ID=24069 iscsitarget-usr] from AUR or compile by yourself fresh version from iSCSI Enterprise Target [http://iscsitarget.sourceforge.net/ homepage]
   * unpack iscsi-target-box.tgz in /lib/initcpio/
