@@ -1,0 +1,13 @@
+#summary One-sentence summary of this page.
+
+= Introduction =
+
+Manual for [http://wiki.archlinux.org/index.php/Mkinitcpio mkinitcpio] on ArchWiki
+
+
+= Details =
+
+Installing for dependencies:
+  * pacman -S mkinitcpio-nfs-utils
+  * install iscsitarget-kernel and iscsitarget-usr from AUR or compile by yourself fresh [http://iscsitarget.sourceforge.net/ version]
+  * unpack iscsi-target-box.tgz in /lib/initcpio/
