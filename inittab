@@ -1,0 +1,18 @@
+# /etc/inittab
+
+::sysinit:/etc/rc.sysinit
+
+# Spawn some gettys
+::askfirst:/sbin/agetty -8 38400 tty1 linux
+::respawn:/sbin/agetty -8 38400 tty2 linux
+::respawn:/sbin/agetty -8 38400 tty3 linux
+# Spawn gettys for COM-ports (optional)
+#::respawn:/sbin/getty -L 9600 ttyS0 vt320
+#::respawn:/sbin/getty -L 9600 ttyS1 vt320
+
+# Stuff to do when restarting the init process
+::restart:/sbin/init
+
+# Stuff to do before rebooting
+::ctrlaltdel:/sbin/reboot
+::shutdown:/etc/rc.shutdown
