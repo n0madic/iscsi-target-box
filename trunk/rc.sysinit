@@ -1,0 +1,18 @@
+#!/bin/ash
+#
+# /etc/rc.sysinit
+#
+
+hostname iscsi-target-box
+
+if [ -d /sys/class/net/lo ]; then
+	echo ":: Bringing up loopback interface"
+	ifconfig lo 127.0.0.1 up
+	route add 127.0.0.1 lo
+fi
+
+exec </dev/tty1 >/dev/tty1 2>&1
+
+sleep 1
+
+# End of file
