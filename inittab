@@ -10,6 +10,9 @@
 #::respawn:/sbin/getty -L 9600 ttyS0 vt320
 #::respawn:/sbin/getty -L 9600 ttyS1 vt320
 
+# Logging junk
+::respawn:/usr/bin/tail -f /var/log/messages > /dev/tty4
+
 # Stuff to do when restarting the init process
 ::restart:/sbin/init
 
