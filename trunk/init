@@ -38,7 +38,7 @@ mount_handler="default_mount_handler"
 
 # if available, start udevd at this stage
 if [ -x /sbin/udevd ]; then
-    msg ":: Starting udevd..."
+    msg -n ":: Starting udevd..."
     echo > /proc/sys/kernel/hotplug
     /sbin/udevd --daemon --resolve-names=never
     export udevd_running=1
@@ -137,21 +137,13 @@ elif [ ! -x "/cfg_root/iscsi-target-etc" ]; then
 else
     msg ":: Update files in /etc"
     cp -r -f -H /cfg_root/iscsi-target-etc/* /etc/
-    if [ -f "/etc/rc.local" ]; then
-        msg ":: Run RC local script"
-        /etc/rc.local
-    fi
 fi
 
 umount -r /cfg_root &>/dev/nul
 rmdir /cfg_root &>/dev/nul
 
-msg -n ":: Starting iSCSI Enterprise Target daemon... "
-/sbin/ietd
-msg "done."
-
 # Auto generate fstab
 cat /proc/mounts > /etc/fstab
-
+ln -s /proc/mounts  /etc/mtab
 
 /linuxrc
