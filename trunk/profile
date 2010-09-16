@@ -1,4 +1,4 @@
-export PS1='[iscsi-target-box]# '
+export PS1='[iscsi-target-box \W]# '
 
 export USER=`id -un`
 export LOGNAME=$USER
