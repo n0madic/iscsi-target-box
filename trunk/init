@@ -22,6 +22,9 @@ fi
 mkdir /dev/pts
 mount -t devpts devpts /dev/pts
 
+mkdir /dev/shm
+mount -t tmpfs none /dev/shm
+
 echo ":: Starting system loggers"
 syslogd
 klogd
