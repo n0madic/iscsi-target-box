@@ -128,6 +128,9 @@ if [ -f "/message" ]; then
     msg "$(cat /message)"
 fi
 
+# Save root device in /etc
+echo $root > /etc/cfg_root
+
 # Mount root at /cfg_root
 mkdir -p /cfg_root
 ${mount_handler} /cfg_root
