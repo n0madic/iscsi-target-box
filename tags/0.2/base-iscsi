@@ -1,0 +1,80 @@
+#ø vim:set ft=sh:
+
+install ()
+{
+    add_dir "/etc"
+    add_dir "/proc"
+    add_dir "/sys"
+    add_dir "/dev"
+    add_dir "/bin"
+    add_dir "/sbin"
+    add_dir "/lib"
+    add_dir "/root"
+    add_dir "/tmp"
+    add_dir "/usr"
+    add_dir "/usr/bin"
+    add_dir "/usr/lib"
+    add_dir "/usr/sbin"
+    add_dir "/usr/share"
+    add_dir "/var"
+    add_dir "/var/log"
+    add_dir "/var/run"
+    add_dir "/var/lock"
+    add_dir "/var/spool"
+
+    add_device "/dev/console" c 5 1
+    
+    add_file "/etc/protocols"
+    add_file "/etc/services"
+    add_file "/etc/inputrc"
+    
+    # Users
+    add_file /lib/initcpio/iscsi-target-box/group /etc/group
+    add_file /lib/initcpio/iscsi-target-box/passwd /etc/passwd
+    add_file /lib/initcpio/iscsi-target-box/shadow /etc/shadow
+
+    # INIT scripts
+    add_file /lib/initcpio/iscsi-target-box/inittab /etc/inittab
+    add_file /lib/initcpio/iscsi-target-box/rc.sysinit /etc/rc.sysinit
+    add_file /lib/initcpio/iscsi-target-box/rc.shutdown /etc/rc.shutdown
+
+    # User profile
+    add_file /lib/initcpio/iscsi-target-box/profile /etc/profile
+
+    # Install BusyBox and more utils
+    add_binary /lib/initcpio/iscsi-target-box/busybox/busybox /bin/busybox
+    add_binary /sbin/modprobe
+    add_binary /sbin/blkid
+
+    # iSCSI Enterprise Target
+    add_binary /usr/sbin/ietd /sbin/ietd
+    add_binary /usr/sbin/ietadm /sbin/ietadm
+
+    # Terminfo
+    add_dir "/usr/share/terminfo"
+    add_dir "/usr/share/terminfo/a"
+    add_dir "/usr/share/terminfo/l"
+    add_dir "/usr/share/terminfo/v"
+    add_file "/usr/share/terminfo/a/ansi"
+    add_file "/usr/share/terminfo/l/linux"
+    add_file "/usr/share/terminfo/v/vt100"
+
+    add_file "/lib/initcpio/init_functions" "/init_functions"
+    add_file "/lib/initcpio/iscsi-target-box/init" "/init"
+    add_file "${CONFIG}" "/config"
+    if [ -n "${MESSAGE}" ]; then
+        echo -e "${MESSAGE}" > ${MESSAGEFILE}
+        add_file "${MESSAGEFILE}" "/message"
+    fi
+    add_file "/etc/modprobe.d/usb-load-ehci-first.conf"
+    SCRIPT=""
+}
+
+help ()
+{
+cat <<HELPEOF
+  This hook sets up all initial directories and installs base
+  utilities. DO NOT remove this one unless you know what you're
+  doing.
+HELPEOF
+}
