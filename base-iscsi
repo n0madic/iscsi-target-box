@@ -1,33 +1,15 @@
 #ø vim:set ft=sh:
 
-install ()
+build ()
 {
-    add_dir "/etc"
-    add_dir "/proc"
-    add_dir "/sys"
-    add_dir "/dev"
-    add_dir "/bin"
-    add_dir "/sbin"
-    add_dir "/lib"
-    add_dir "/root"
-    add_dir "/tmp"
-    add_dir "/usr"
-    add_dir "/usr/bin"
-    add_dir "/usr/lib"
-    add_dir "/usr/sbin"
-    add_dir "/usr/share"
-    add_dir "/var"
-    add_dir "/var/log"
-    add_dir "/var/run"
-    add_dir "/var/lock"
-    add_dir "/var/spool"
+    for dir in etc proc sys dev bin sbin lib root tmp run /usr/{bin,sbin,lib,share} /var/{log,run,lock,spool}; do
+        add_dir "/$dir"
+    done
 
-    add_device "/dev/console" c 5 1
-    
     add_file "/etc/protocols"
     add_file "/etc/services"
     add_file "/etc/inputrc"
-    
+
     # Users
     add_file /lib/initcpio/iscsi-target-box/group /etc/group
     add_file /lib/initcpio/iscsi-target-box/passwd /etc/passwd
@@ -51,16 +33,16 @@ install ()
     add_binary /usr/sbin/ietadm /sbin/ietadm
 
     # Terminfo
-    add_dir "/usr/share/terminfo"
-    add_dir "/usr/share/terminfo/a"
-    add_dir "/usr/share/terminfo/l"
-    add_dir "/usr/share/terminfo/v"
+    for dir in /usr/share/terminfo/{a,l,v}; do
+        add_dir "$dir"
+    done
     add_file "/usr/share/terminfo/a/ansi"
     add_file "/usr/share/terminfo/l/linux"
     add_file "/usr/share/terminfo/v/vt100"
 
     add_file "/lib/initcpio/init_functions" "/init_functions"
     add_file "/lib/initcpio/iscsi-target-box/init" "/init"
+
     add_file "${CONFIG}" "/config"
     if [ -n "${MESSAGE}" ]; then
         echo -e "${MESSAGE}" > ${MESSAGEFILE}
