@@ -9,8 +9,10 @@ mount -t proc proc /proc
 mount -t sysfs sys /sys
 if grep -q devtmpfs /proc/filesystems 2>/dev/null; then
   mount -n -t devtmpfs udev /dev -o mode=0755,size=10M,nosuid
+  devtmpfs_mounted=1
 else
   mount -n -t tmpfs udev /dev -o mode=0755,size=10M,nosuid
+  devtmpfs_mounted=0
   # We don't have devtmpfs, so add the most important standard devices
   mknod /dev/null c 1 3
   mknod /dev/zero c 1 5
@@ -18,6 +20,7 @@ else
   # /dev/mem is needed if we want to load uvesafb before triggering uevents
   mknod /dev/mem c 1 1
 fi
+mount -t tmpfs run /run -o nosuid,noexec,nodev,mode=755,size=10M
 
 mkdir /dev/pts
 mount -t devpts devpts /dev/pts
@@ -25,84 +28,41 @@ mount -t devpts devpts /dev/pts
 mkdir /dev/shm
 mount -t tmpfs none /dev/shm
 
-echo ":: Starting system loggers"
-syslogd
-klogd
-
-read CMDLINE </proc/cmdline
-export CMDLINE
-
 export root=""
 export init=""
 echo "/sbin/modprobe" > /proc/sys/kernel/modprobe
 
-# set default mount handler
-mount_handler="default_mount_handler"
+# parse the kernel command line
+parse_cmdline
 
 # if available, start udevd at this stage
 if [ -x /sbin/udevd ]; then
     msg -n ":: Starting udevd..."
-    echo > /proc/sys/kernel/hotplug
-    /sbin/udevd --daemon --resolve-names=never
-    export udevd_running=1
+    udevd --daemon --resolve-names=never
+    udevd_running=1
     msg "done."
 else
-    export udevd_running=0
+    udevd_running=0
 fi
-
-for cmd in ${CMDLINE}; do
-    case "${cmd}" in
-        \#*) break ;; # ignore everything after a # in the commandline
-        # The kernel passes those to the kernel on its own
-        [0123456Ss]) ;;
-        [0-9]*) ;;
-        single) ;;
-        rw) readwrite="yes" ;;
-        ro) readwrite="no" ;;
-        # only export stuff that does work with ash :)
-        *=*) rhs="$(echo "${cmd}" | cut -d= -f2-)"
-             cmd="$(echo "${cmd}" | cut -d= -f1 | sed 's|\.|_|g')"
-             cmd="$(echo "${cmd}" | sed 's|-|_|g')=${rhs}"
-             (echo "${cmd}" | grep -qe '^[0-9]') || export "${cmd}"
-             ;;
-        *)   cmd="$(echo "${cmd}" | sed 's|\.|_|g')"
-             cmd="$(echo "${cmd}" | sed 's|-|_|g')"
-             (echo "${cmd}" | grep -qe '^[0-9]') || export "${cmd}=y"
-             ;;
-    esac
-done
 
 if [ -n "${disablehooks}" ]; then
     for d in $(echo "${disablehooks}" | sed 's|,| |g'); do
-        export "hook_${d}=disabled"
+        eval "hook_${d}=disabled"
     done
 fi
 
-if [ -n "${disablemodules}" ]; then
-    for d in $(echo "${disablemodules}" | sed 's|,| |g'); do
-        export "mod_${d}=disabled"
-    done
-fi
-
-if [ -n "${earlymodules}" ]; then
-    for m in $(echo "${earlymodules}" | sed 's|,| |g'); do
-        /sbin/modprobe -q ${m} > /dev/null 2>&1
-    done
+earlymodules=${earlymodules//,/ }
+if [ -n "${earlymodules## }" ]; then
+    modprobe -qab ${earlymodules}
 fi
 
 . /config
 
-for m in ${MODULES}; do
-    TST=""
-    eval "TST=\$mod_${m}"
-    if [ "${TST}" != "disabled" ]; then
-        /sbin/modprobe -q ${m} > /dev/null 2>&1
-    fi
-done
+[ -n "${MODULES## }" ] && modprobe -qab $MODULES
 
 # If rootdelay is empty or not a non-negative integer, set it to 10
 if [ -z "${rootdelay}" ] || ! [ "${rootdelay}" -ge 0 ]; then
-    export rootdelay=10
+    rootdelay=10
 fi
 
 if [ -e "/hooks" ]; then
@@ -120,6 +80,11 @@ if [ -e "/hooks" ]; then
     done
 fi
 
+if [ "${break}" = "y" ]; then
+    echo ":: Break requested, type 'exit' to resume operation"
+    launch_interactive_shell
+fi
+
 msg -n ":: Starting telnet daemon..."
 telnetd
 msg "done."
@@ -133,7 +98,7 @@ echo $root > /etc/cfg_root
 
 # Mount root at /cfg_root
 mkdir -p /cfg_root
-${mount_handler} /cfg_root
+${mount_handler:-default_mount_handler} /cfg_root
 
 if [ "$(stat -c %D /)" = "$(stat -c %D /cfg_root)" ]; then
     err "Failed to mount the config root device."
@@ -147,6 +112,10 @@ fi
 
 umount -r /cfg_root &>/dev/nul
 rmdir /cfg_root &>/dev/nul
+
+echo ":: Starting system loggers"
+syslogd
+klogd
 
 # Auto generate fstab
 cat /proc/mounts > /etc/fstab
