@@ -42,14 +42,21 @@ build ()
 
     add_file "/lib/initcpio/init_functions" "/init_functions"
     add_file "/lib/initcpio/iscsi-target-box/init" "/init"
+    add_file "/lib/modprobe.d/usb-load-ehci-first.conf"
 
-    add_file "${CONFIG}" "/config"
-    if [ -n "${MESSAGE}" ]; then
-        echo -e "${MESSAGE}" > ${MESSAGEFILE}
-        add_file "${MESSAGEFILE}" "/message"
-    fi
-    add_file "/etc/modprobe.d/usb-load-ehci-first.conf"
-    SCRIPT=""
+   (
+        . "$CONFIG"
+
+        # sanitize of any extra whitespace
+        read -r -a modules <<< "$MODULES"
+        read -r -a hooks <<< "$HOOKS"
+
+        {
+            (( ${#modules[*]} )) && printf 'MODULES="%s"\n' "${modules[*]%\?}"
+            (( ${#hooks[*]} )) && printf 'HOOKS="%s"\n' "${hooks[*]}"
+        } >"$BUILDROOT/config"
+    )
+
 }
 
 help ()
