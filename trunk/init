@@ -5,9 +5,9 @@
 . /init_functions
 
 msg ":: Loading Initramfs"
-mount -t proc proc /proc
-mount -t sysfs sys /sys
-if grep -q devtmpfs /proc/filesystems 2>/dev/null; then
+mount -t proc proc /proc -o nosuid,noexec,nodev
+mount -t sysfs sys /sys -o nosuid,noexec,nodev
+if grep -q devtmpfs /proc/filesystems; then
   mount -n -t devtmpfs udev /dev -o mode=0755,size=10M,nosuid
   devtmpfs_mounted=1
 else
@@ -36,9 +36,9 @@ echo "/sbin/modprobe" > /proc/sys/kernel/modprobe
 parse_cmdline
 
 # if available, start udevd at this stage
-if [ -x /sbin/udevd ]; then
+if [ -x /lib/udev/udevd ]; then
     msg -n ":: Starting udevd..."
-    udevd --daemon --resolve-names=never
+    /lib/udev/udevd --daemon --resolve-names=never
     udevd_running=1
     msg "done."
 else
