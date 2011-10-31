@@ -7,7 +7,7 @@ Install GRUB on this disk and edit menu.lst:
  {{{
  title  Linux iSCSI Target Box
  root   (hd0,0)
- kernel /vmlinuz26 root=/dev/sdb1 ro ip=<this-box-ip>::<gw-ip>:<netmask>::eth0:none
+ kernel /vmlinuz-linux root=/dev/sdb1 ro ip=<this-box-ip>::<gw-ip>:<netmask>::eth0:none
  initrd /initrd-iscsi.img
 }}}
 
