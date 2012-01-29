@@ -1,36 +1,21 @@
-#!/bin/busybox ash
-# Install busybox's applets as symlinks
-/bin/busybox --install -s
+#!/usr/bin/ash
+PATH=/usr/bin
 
 . /init_functions
 
 msg ":: Loading Initramfs"
 mount -t proc proc /proc -o nosuid,noexec,nodev
 mount -t sysfs sys /sys -o nosuid,noexec,nodev
-if grep -q devtmpfs /proc/filesystems; then
-  mount -n -t devtmpfs udev /dev -o mode=0755,size=10M,nosuid
-  devtmpfs_mounted=1
-else
-  mount -n -t tmpfs udev /dev -o mode=0755,size=10M,nosuid
-  devtmpfs_mounted=0
-  # We don't have devtmpfs, so add the most important standard devices
-  mknod /dev/null c 1 3
-  mknod /dev/zero c 1 5
-  mknod /dev/console c 5 1
-  # /dev/mem is needed if we want to load uvesafb before triggering uevents
-  mknod /dev/mem c 1 1
-fi
+mount -t devtmpfs dev /dev -o mode=0755,nosuid
+mount -t tmpfs run /run -o nosuid,nodev,mode=0755
 mount -t tmpfs run /run -o nosuid,noexec,nodev,mode=755,size=10M
+mkdir -m755 /run/initramfs
 
 mkdir /dev/pts
 mount -t devpts devpts /dev/pts
 
 mkdir /dev/shm
 mount -t tmpfs none /dev/shm
-
-export root=""
-export init=""
-echo "/sbin/modprobe" > /proc/sys/kernel/modprobe
 
 # parse the kernel command line
 parse_cmdline
@@ -45,11 +30,9 @@ else
     udevd_running=0
 fi
 
-if [ -n "${disablehooks}" ]; then
-    for d in $(echo "${disablehooks}" | sed 's|,| |g'); do
-        eval "hook_${d}=disabled"
-    done
-fi
+for d in ${disablehooks//,/ }; do
+    eval "hook_${d}=disabled"
+done
 
 earlymodules=${earlymodules//,/ }
 if [ -n "${earlymodules## }" ]; then
@@ -80,8 +63,8 @@ if [ -e "/hooks" ]; then
     done
 fi
 
-if [ "${break}" = "y" ]; then
-    echo ":: Break requested, type 'exit' to resume operation"
+if [ "${break}" = "y" ] || [ "${break}" = "premount" ]; then
+    echo ":: Pre-mount break requested, type 'exit' to resume operation"
     launch_interactive_shell
 fi
 
@@ -92,6 +75,9 @@ msg "done."
 if [ -f "/message" ]; then
     msg "$(cat /message)"
 fi
+
+rootdev=$(resolve_device "$root") && root=$rootdev
+unset rootdev
 
 # Save root device in /etc
 echo $root > /etc/cfg_root
@@ -110,6 +96,11 @@ else
     cp -r -f -H /cfg_root/iscsi-target-etc/* /etc/
 fi
 
+if [ "${break}" = "postmount" ]; then
+    echo ":: Post-mount break requested, type 'exit' to resume operation"
+    launch_interactive_shell
+fi
+
 umount -r /cfg_root &>/dev/nul
 rmdir /cfg_root &>/dev/nul
 
@@ -119,6 +110,5 @@ klogd
 
 # Auto generate fstab
 cat /proc/mounts > /etc/fstab
-ln -s /proc/mounts  /etc/mtab
 
-/linuxrc
+/usr/bin/linuxrc
