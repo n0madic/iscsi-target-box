@@ -2,9 +2,13 @@
 
 build ()
 {
-    for dir in etc proc sys dev bin sbin lib root tmp run /usr/{bin,sbin,lib,share} /var/{log,run,lock,spool}; do
+    for dir in etc proc sys dev lib root tmp run /usr/{bin,lib,share} /var/{log,run,lock,spool}; do
         add_dir "/$dir"
     done
+
+    add_symlink /sbin usr/bin
+    add_symlink /bin usr/bin
+    add_symlink /usr/sbin bin
 
     add_file "/etc/protocols"
     add_file "/etc/services"
@@ -25,8 +29,17 @@ build ()
 
     # Install BusyBox and more utils
     add_binary /lib/initcpio/iscsi-target-box/busybox/busybox /bin/busybox
+    for applet in $(/lib/initcpio/iscsi-target-box/busybox/busybox --list); do
+        add_symlink "/usr/bin/$applet" busybox
+    done
+    add_binary /bin/mount
     add_binary /sbin/modprobe
     add_binary /sbin/blkid
+
+    add_symlink "/etc/mtab" "/proc/self/mounts"
+
+    # Add an empty fstab to avoid mount warning when -o remount is used
+    >"$BUILDROOT/etc/fstab"
 
     # iSCSI Enterprise Target
     add_binary /usr/sbin/ietd /sbin/ietd
