@@ -8,8 +8,6 @@ mount -t proc proc /proc -o nosuid,noexec,nodev
 mount -t sysfs sys /sys -o nosuid,noexec,nodev
 mount -t devtmpfs dev /dev -o mode=0755,nosuid
 mount -t tmpfs run /run -o nosuid,nodev,mode=0755
-mount -t tmpfs run /run -o nosuid,noexec,nodev,mode=755,size=10M
-mkdir -m755 /run/initramfs
 
 mkdir /dev/pts
 mount -t devpts devpts /dev/pts

@@ -38,6 +38,10 @@ build ()
 
     add_symlink "/etc/mtab" "/proc/self/mounts"
 
+    for rules in $(ls /lib/udev/rules.d/); do
+        add_file "/lib/udev/rules.d/$rules"
+    done
+
     # Add an empty fstab to avoid mount warning when -o remount is used
     >"$BUILDROOT/etc/fstab"
 
