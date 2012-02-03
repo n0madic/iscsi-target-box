@@ -14,6 +14,11 @@ build ()
     add_file "/etc/services"
     add_file "/etc/inputrc"
 
+    # DNS resolving
+    add_file "/etc/nsswitch.conf"
+    add_binary "/lib/libnss_files.so.2"
+    add_binary "/lib/libnss_dns.so.2"
+
     # Users
     add_file /lib/initcpio/iscsi-target-box/group /etc/group
     add_file /lib/initcpio/iscsi-target-box/passwd /etc/passwd
@@ -38,9 +43,12 @@ build ()
 
     add_symlink "/etc/mtab" "/proc/self/mounts"
 
+    # Expansion udev
     for rules in $(ls /lib/udev/rules.d/); do
         add_file "/lib/udev/rules.d/$rules"
     done
+    add_binary "/lib/udev/cdrom_id"
+    add_binary "/lib/udev/mtd_probe"
 
     # Add an empty fstab to avoid mount warning when -o remount is used
     >"$BUILDROOT/etc/fstab"
