@@ -10,11 +10,11 @@ Manual for [http://wiki.archlinux.org/index.php/Mkinitcpio mkinitcpio] on Arch W
 Installing for dependencies:
   * `pacman -S mkinitcpio-nfs-utils`
   * install [http://aur.archlinux.org/packages.php?ID=24067 iscsitarget-kernel] and [http://aur.archlinux.org/packages.php?ID=24069 iscsitarget-usr] from AUR or compile by yourself fresh version from iSCSI Enterprise Target [http://iscsitarget.sourceforge.net/ homepage]
-  * unpack iscsi-target-box-X.X-src.tgz in /lib/initcpio/
-  * create link for install script: `ln base-iscsi /lib/initcpio/install/base-iscsi`
+  * unpack iscsi-target-box-X.X-src.tgz in /usr/lib/initcpio/
+  * create link for install script: `ln base-iscsi /usr/lib/initcpio/install/base-iscsi`
 
 Generate initramfs:
- `mkinitcpio -c /lib/initcpio/iscsi-target-box/mkinitcpio.conf -g /boot/initrd-iscsi.img`
+ `mkinitcpio -c /usr/lib/initcpio/iscsi-target-box/mkinitcpio.conf -g /boot/initrd-iscsi.img`
 
 Quick test with QEMU:
  `qemu -snapshot -kernel /boot/vmlinuz-linux -initrd /boot/initrd-iscsi.img -hda /dev/sda -append "root=/dev/sda1 ro"`
