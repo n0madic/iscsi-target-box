@@ -23,7 +23,7 @@ echo "action=/sbin/poweroff" >> /etc/acpi/events/powerbtn
 acpid
 echo "done."
 
-echo -n ":: Starting iSCSI Enterprise Target daemon... "
+echo -n ":: Starting iSCSI Enterprise Target daemon..."
 /sbin/ietd
 echo "done."
 
