@@ -2,10 +2,11 @@
 
 build ()
 {
-    for dir in etc proc sys dev lib root tmp run /usr/{bin,lib,share} /var/{log,run,lock,spool}; do
+    for dir in etc proc sys dev root tmp run /usr/{bin,share} /var/{log,run,lock,spool}; do
         add_dir "/$dir"
     done
 
+    add_symlink /lib usr/lib
     add_symlink /sbin usr/bin
     add_symlink /bin usr/bin
     add_symlink /usr/sbin bin
@@ -20,35 +21,42 @@ build ()
     add_binary "/lib/libnss_dns.so.2"
 
     # Users
-    add_file /lib/initcpio/iscsi-target-box/group /etc/group
-    add_file /lib/initcpio/iscsi-target-box/passwd /etc/passwd
-    add_file /lib/initcpio/iscsi-target-box/shadow /etc/shadow
+    add_file /usr/lib/initcpio/iscsi-target-box/group /etc/group
+    add_file /usr/lib/initcpio/iscsi-target-box/passwd /etc/passwd
+    add_file /usr/lib/initcpio/iscsi-target-box/shadow /etc/shadow
 
     # INIT scripts
-    add_file /lib/initcpio/iscsi-target-box/inittab /etc/inittab
-    add_file /lib/initcpio/iscsi-target-box/rc.sysinit /etc/rc.sysinit
-    add_file /lib/initcpio/iscsi-target-box/rc.shutdown /etc/rc.shutdown
+    add_file /usr/lib/initcpio/iscsi-target-box/inittab /etc/inittab
+    add_file /usr/lib/initcpio/iscsi-target-box/rc.sysinit /etc/rc.sysinit
+    add_file /usr/lib/initcpio/iscsi-target-box/rc.shutdown /etc/rc.shutdown
 
     # User profile
-    add_file /lib/initcpio/iscsi-target-box/profile /etc/profile
+    add_file /usr/lib/initcpio/iscsi-target-box/profile /etc/profile
 
     # Install BusyBox and more utils
-    add_binary /lib/initcpio/iscsi-target-box/busybox/busybox /bin/busybox
-    for applet in $(/lib/initcpio/iscsi-target-box/busybox/busybox --list); do
+    add_binary /usr/lib/initcpio/iscsi-target-box/busybox/busybox /bin/busybox
+    for applet in $(/usr/lib/initcpio/iscsi-target-box/busybox/busybox --list); do
         add_symlink "/usr/bin/$applet" busybox
     done
-    add_binary /bin/mount
-    add_binary /sbin/modprobe
-    add_binary /sbin/blkid
+    
+    # add kmod with applet symlinks
+    add_binary kmod
+    for applet in {dep,ins,rm,ls}mod mod{probe,info}; do
+        add_symlink "/usr/bin/$applet" kmod
+    done
+
+    add_binary blkid
+    add_binary mount
+    add_binary agetty
 
     add_symlink "/etc/mtab" "/proc/self/mounts"
 
     # Expansion udev
-    for rules in $(ls /lib/udev/rules.d/); do
-        add_file "/lib/udev/rules.d/$rules"
+    for rules in $(ls /usr/lib/udev/rules.d/); do
+        add_file "/usr/lib/udev/rules.d/$rules"
     done
-    add_binary "/lib/udev/cdrom_id"
-    add_binary "/lib/udev/mtd_probe"
+    add_binary "/usr/lib/udev/cdrom_id"
+    add_binary "/usr/lib/udev/mtd_probe"
 
     # Add an empty fstab to avoid mount warning when -o remount is used
     >"$BUILDROOT/etc/fstab"
@@ -65,9 +73,9 @@ build ()
     add_file "/usr/share/terminfo/l/linux"
     add_file "/usr/share/terminfo/v/vt100"
 
-    add_file "/lib/initcpio/init_functions" "/init_functions"
-    add_file "/lib/initcpio/iscsi-target-box/init" "/init"
-    add_file "/lib/modprobe.d/usb-load-ehci-first.conf"
+    add_file "/usr/lib/initcpio/init_functions" "/init_functions"
+    add_file "/usr/lib/initcpio/iscsi-target-box/init" "/init"
+    add_file "/usr/lib/modprobe.d/usb-load-ehci-first.conf"
 
    (
         . "$CONFIG"
