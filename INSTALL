@@ -12,18 +12,18 @@ Installing for dependencies:
 
     * pacman -S mkinitcpio-nfs-utils
     * install iscsitarget-kernel and iscsitarget-usr from AUR or compile by yourself fresh version from iSCSI Enterprise Target homepage
-    * unpack this archive in /lib/initcpio/
+    * unpack this archive in /usr/lib/initcpio/
     * create link for install script: ln base-iscsi ../install/base-iscsi 
 
 === Build ===
 
 Generate initramfs:
 
-    mkinitcpio -c /lib/initcpio/iscsi-target-box/mkinitcpio.conf -g /boot/initrd-iscsi.img 
+    mkinitcpio -c /usr/lib/initcpio/iscsi-target-box/mkinitcpio.conf -g /boot/initrd-iscsi.img 
 
 Quick test with QEMU:
 
-    qemu -snapshot -kernel /boot/vmlinuz26 -initrd /boot/initrd-iscsi.img 
+    qemu -snapshot -kernel /boot/vmlinuz-linux -initrd /boot/initrd-iscsi.img 
 
 Default root password: 666666
 

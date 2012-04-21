@@ -38,7 +38,7 @@ build ()
     for applet in $(/usr/lib/initcpio/iscsi-target-box/busybox/busybox --list); do
         add_symlink "/usr/bin/$applet" busybox
     done
-    
+
     # add kmod with applet symlinks
     add_binary kmod
     for applet in {dep,ins,rm,ls}mod mod{probe,info}; do
